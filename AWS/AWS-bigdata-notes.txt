@@ -1,0 +1,169 @@
+
+1. HDFS Commands:
+
+hadoop fs -l /data/
+
+hadoop distcp s3n://accesskey:secretkey@s3-bucket/mydata/hiveimpala hdfs:///data
+
+
+2. Run MapReduce job
+
+mkdir streamingCode
+
+wget -O ./streamingCode/wordSplitter.py http://s3.amazonaws.com/elasticmapreduce/samples/wordcount/wordSplitter.py
+
+hadoop jar contrib/streaming/hadoop-streaming.jar -files streamingCode/wordSplitter.py \
+-mapper wordSplitter.py \
+-input s3://elasticmapreduce/samples/wordcount/input \
+-output streamingCode/wordCountOut \
+-reducer aggregate
+
+
+hadoop fs -cat streamingCode/wordCountOut/*
+
+hadoop fs -rm streamingCode/wordCountOut/*
+hadoop fs -rmdir streamingCode/wordCount
+
+rm streamingCode/*
+rmdir streamingCode
+
+
+3. Run Hive
+
+-- Serde prep
+ADD JAR s3://elasticmapreduce/samples/hive-ads/libs/jsonserde.jar;
+
+
+-- impressions
+
+CREATE EXTERNAL table impressions (
+    requestBeginTime string, 
+    adId string,
+    impressionId string,
+    referrer string,
+    userAgent string,
+    userCookie string,
+    ip string
+)
+PARTITIONED BY (dt string)
+ROW FORMAT 
+    serde 'com.amazon.elasticmapreduce.JsonSerde'
+    with serdeproperties ('paths'='requestBeginTime, adId, impressionId, referrer, userAgent, userCookie, ip')
+LOCATION 's3://elasticmapreduce/samples/hive-ads/tables/impressions';
+
+alter table impressions recover partitions;
+
+-- clicks
+create external table clicks (
+    impressionId string
+)
+partitioned by (dt string)
+row format
+    serde 'com.amazon.elasticmapreduce.JsonSerde'
+    with serdeproperties ('paths'='impressionId')
+loaction 's3://elasticmapreduce/samples/hive-ads/tables/clicks';
+
+alter table clicks recover partitions;
+
+
+-- tmp_clicks
+create external table tmp_clicks (
+    impressionId string
+);
+
+insert overwrite table tmp_clicks
+   select impressionId from click c 
+   where c.dt >= '2009-04-13-08-00'
+     and c.dt  < '2009-04-13-09-20'
+
+-- joined_impressions
+create external table joined_impressions (
+    requestBeginTime string, 
+    adId string,
+    impressionId string,
+    referrer string,
+    userCookie string,
+    ip string,
+    clicked Boolean
+)
+patitioned by (day string, hour string)
+row format delimited fields terminated by ',' lines terminated by '\n'
+store as textfile
+location 's3://the-bucket/joined_impressions
+;
+
+
+insert overwrite table joined_impressions patition(day='2009-04-13', hour='08')
+select
+    i.requestBeginTime, i.adId, i.impressionId, i.referrer, i.userCookie,
+    i.ip, (c.impressionId is not null) clicked
+from 
+    impressions i letf outer join tmp_clicks c on i.impressionId = c.impressionId
+;
+
+
+-- cleanup
+
+Drop table impressions;
+Drop table clicks;
+Drop table tmp_clicks;
+Drop table joined_impressions;
+
+
+
+4. Run Pig
+
+medallionvehicles = LOAD 's3://a-bucket/mydata/a_file.csv' using PigStorage(',') AS
+(License_Number, Name, Type, Current_Status, DMV_License_Plate_Number, Vehicle_VIN_Number, Vehicle_Type, Model_Year,
+Medallion_Type, Agent_Number, Last_Updated_Date, Last_Updated_Time);
+
+aggs = GROUP medallionvhicles By Medallion_Type;
+
+count = FOREACH aggs generate group, COUNT(medallionvehicles);
+
+STORE count INTO 's3://a-bucket/mydata/MedallionGroups' USING PigStorage(',');
+
+
+5. Run Impala
+
+hadoop distcp s3n://accesskey:secretkey@s3-bucket/mydata/hiveimpala hdfs:///data
+hadoop fs -ls /data/
+
+>> impala-shell
+
+create external table MedallionVhicles (
+    License_Number string, 
+    Name string, 
+    Type string, 
+    Current_Status string, 
+    DMV_License_Plate_Number stirng, 
+    Vehicle_VIN_Number string, 
+    Vehicle_Type string, 
+    Model_Year string,
+    Medallion_Type string, 
+    Agent_Number string, 
+    Last_Updated_Date string, 
+    Last_Updated_Time string
+) row format delimited fields terminated by ',' location '/data/'
+;
+
+select * from MedallionVhicles where Model_Year > '2010';
+
+Drop table MedallionVhicles;
+
+
+5. Redshift Copy
+
+create table Insurance (....)
+commit;
+
+COPY Insurance FROM 's3://bucket/mydata/a_file.csv' 
+WITH credentials as 'aws_access_key_id=...;aws_secret_access_key=...'
+CSV
+
+create table DynCustomers(....)
+commit;
+
+COPY DynCustomers From 'dynamodb://DynCustomers'
+WITH credentials as 'aws_access_key_id=...;aws_secret_access_key=...'
+Readratio 50
