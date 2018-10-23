@@ -1,0 +1,69 @@
+
+https://mvnrepository.com/
+
+----------------
+1. ignore test
+----------------
+
+mvn package -Dmaven.test.skip=true
+
+pom.xml
+<properties>
+    <maven.test.skip>true</maven.test.skip>
+</properties>
+
+mvn package -DskipTests
+
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>2.19.1</version>
+    <configuration>
+        <skipTests>true</skipTests>
+    </configuration>
+</plugin>
+
+----------------
+2. sourceEncoding
+----------------
+ <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <kotlin.version>1.2.60</kotlin.version>
+      <junit.version>4.12</junit.version>
+  </properties>
+
+----------------
+3. exclusion dependency
+----------------
+<dependency>
+    <groupId>apg.apache.struts</groupId>
+    <artifactId>struts2-core</artifactId>
+    <version>${kotlin.version}</version>
+    <exclusions>
+        <exclusion>  
+             <groupId>javassist</groupId> 
+             <artifactId>javassist</artifactId>
+        <exclusion>
+    </exclusions>
+</dependency>
+
+
+4. 依赖传递
+   scope compile  -> 传递
+   scope test     -> 不传递
+
+5. 原则
+   1. 路径最短原则
+   2. 路径相同，先出现原则
+
+6. 版本锁定
+<dependencyManagement>
+   <dependencies>
+       <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <version>4.0</version>
+       </dependency>
+   </dependencies>
+</dependencyManagement>
+

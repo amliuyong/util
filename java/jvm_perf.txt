@@ -1,0 +1,130 @@
+
+java -version
+mixed mode
+
+java -Xint -version
+interpreted mode
+
+java -Xcomp -version
+compiled mode
+
+java -X
+  -Xms, -Xmx
+  -Xss, #set java thread stack size
+  -Xloggc,
+
+Size:
+
+java -XX:NewSize=2m -version
+
+java -XX:NewSize=2[kmgKMG] -version
+
+java -XX:+PrintFlagsFinal  -version
+
+Boolean:
+java -XX:+PrintFlagsFinal  -version | grep NewSize
+java -XX:+PrintFlagsFinal  -version | grep PrintFlagsFinal
+java -XX:+PrintFlagsFinal  XX:+PrintGCDetails  -version | grep PrintG
+
+
+java -XX:+PrintFlagsFinal  -version | grep Dump
+
+String:
+
+java -XX:+PrintFlagsFinal -XX:HeapDumpPath=./dump -version | grep Dump
+
+
+jps
+jinfo
+
+check:
+jinfo -flag NewSize 1848
+
+change:
+jinfo -flag NewSize=100m 1848
+
+
+
+java -XX:+PrintFlagsFinal   -version | grep OnStackReplacePercentage
+
+java -XX:+PrintFlagsFinal   -version | grep UseCounterDecay
+
+jstat -compiler 1848
+
+
+Java Stack:
+512K (32)  1024K(64)
+-Xss<size>        set java thread stack size
+
+Escape Analysis
+
+-XX:+DoEscapeAnalysis
+
+java -XX:+PrintFlagsFinal   -version  | grep Allocat
+EliminateAllocationArraySizeLimit
+EliminateAllocations
+
+
+ java -XX:+PrintFlagsFinal   -version  | grep TLAB
+
+ -XX:+UseTLAB
+
+
+java -Xms64M
+java -Xmx512M
+java -XX:InitialHeapSize=64M
+java -XX:MaxHeapSize=512M
+
+java -XshoSettings:vm
+java -XX:+PrintCommandLineFlags
+
+jmap -heap <pid>
+
+
+
+java -XX:+PrintFlagsFinal   -version  | grep HeapDump
+
+
+Dump OOM log:
+
+-Xmx30m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/java_dump.hprof
+
+
+GC:
+
+System.gc() --> Full GC
+
+-Xmx30m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/java_dump2.hprof -XX:+PrintGCDetails
+
+-XX:+DisableExplicitGC
+ when use RIM and Directory Mem, do not use DisableExplicitGC
+
+-XX:+UseSerialGC 
+-XX:+UseConcMarkSweepGC -XX:+UseSerialGC -XX:-UseParNewGC
+
+
+java -XX:+PrintFlagsFinal   -version  | grep Use | grep 'GC '
+
+UseAdaptiveSizePolicyWithSystemGC
+UseConcMarkSweepGC
+UseG1GC
+UseMaximumCompactionOnSystemGC
+UseParNewGC
+UseParallelGC
+UseParallelOldGC
+UseSerialGC
+
+ratio to percentage
+java -XX:+PrintFlagsFinal   -version  | grep Ratio
+1/(1+xxxRatio) * 100%
+
+
+jps -lvm
+
+jps
+
+java -XX:+PrintFlagsFinal   -version  | grep Full | grep 'GC '
+
+-XX:+HeapDumpAfterFullGC -Xloggc:/tmp/dump/full_gc2.txt
+
+jmap -dump:format=b,file=./tomcat.hreof 8766
