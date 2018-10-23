@@ -1,0 +1,190 @@
+1. create cluster  production
+
+aws ecs create-cluster --cluster-name production
+
+aws s3 cp ecs.config s3://nickjj_dockerzon/ecs.config
+
+
+aws s3 ls s3://nickjj_dockerzon
+
+---------------
+cat ./ecs.config
+ECS_CLUSTER=production
+---------------
+
+
+2. create repository
+
+aws ecr get-login
+
+eval "$(aws ecr get-login)"
+
+
+aws ecr create-repository --repository-name dockerzon/dockerzon
+aws ecr create-repository --repository-name dockerzon/nginx
+
+aws ecr describe-repositories
+
+
+docker tag dockerzon_dockerzon:latest \
+xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/dockerzon:latest
+
+docker push xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/dockerzon
+
+
+docker tag dockerzon_nginx:latest \
+xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/nginx:latest
+
+docker push xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/nginx
+
+
+3. create EC2 instances
+
+aws ec2 run-instances --image-id ami-2b3b6041 --count 3 \
+--instance-type t2.micro --iam-instance-profile Name=ecsInstanceRole \
+--key-name aws-nick --security-group-ids sg-5f63c627 \
+--user-data file://copy-ecs-config-to-s3
+
+
+---------------
+cat ./copy-ecs-config-to-s3
+#!/bin/bash
+
+yum install -y aws-cli
+aws s3 cp s3://nickjj_dockerzon/ecs.config /etc/ecs/ecs.config
+
+---------------
+
+
+aws ecs list-container-instances --cluster production
+
+
+4. register-task-definition
+
+
+Generate a secure token
+
+# Make sure you're in the dockerzon/ folder when executing this command
+docker-compose up -d
+
+# Generate a secret token with Rails
+docker exec dockerzon_dockerzon_1 rake secret
+
+# Ensure everything has stopped
+docker-compose stop
+
+
+Register the sidekiq task definition that you downloaded
+
+aws ecs register-task-definition \
+--cli-input-json file://worker-task-definition.json
+
+Register the web task definition that you downloaded
+
+aws ecs register-task-definition \
+--cli-input-json file://web-task-definition.json
+
+Register the db reset task definition that you downloaded
+
+aws ecs register-task-definition \
+--cli-input-json file://db-reset-task-definition.json
+
+
+Initialize the database with the reset task
+
+aws ecs run-task --cluster production --task-definition db-reset --count 1
+
+Deregister the extremely dangerous reset task
+
+aws ecs deregister-task-definition --task-definition db-reset:1
+
+
+Register the db migrate task definition that you downloaded
+
+aws ecs register-task-definition \
+--cli-input-json file://db-migrate-task-definition.json
+
+
+Run a database migration with the migrate task
+aws ecs run-task --cluster production --task-definition db-migrate --count 1
+
+List all task definitions
+aws ecs list-task-definitions
+
+
+5. create-service
+
+aws ecs create-service --cli-input-json file://web-service.json
+aws ecs describe-services --cluster production --services web
+
+
+aws ecs create-service --cli-input-json file://worker-service.json
+aws ecs describe-services --cluster production --services worker
+
+View the web application in your browser
+http://the_dns_name_of_your_load_balancer
+
+
+
+
+
+6. update-service
+
+
+Build a new version of the application
+docker-compose build
+
+Tag the Dockerzon image
+docker tag -f dockerzon_dockerzon:latest \
+xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/dockerzon:latest
+
+
+Authenticate your Docker client
+aws ecr get-login
+
+eval "$(aws ecr get-login)"
+
+
+Push the Dockerzon image to your repository
+docker push xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/dockerzon
+
+View the web application in your browser
+http://the_dns_name_of_your_load_balancer
+
+
+Register a new web task definition
+aws ecs register-task-definition \
+--cli-input-json file://web-task-definition.json
+
+
+Update the web service
+aws ecs update-service --cluster production --service web \
+--task-definition web --desired-count 2
+
+
+Register a new worker task definition
+aws ecs register-task-definition \
+--cli-input-json file://worker-task-definition.json
+
+
+Update the worker service
+aws ecs update-service --cluster production --service worker \
+--task-definition worker --desired-count 1
+
+7. Container Logs
+
+SSH into one of the web container instances
+ssh -i ~/.ssh/aws-nick.pem ec2-user@ec2-54-152-100-156.compute-1.amazonaws.com
+
+docker ps -a
+
+# Replace 7b0d9901ad78 with your container ID for nginx
+docker logs -f 7b0d9901ad78
+
+# Replace 310a8204ed55 with your container ID for rails
+docker logs --tail 20 310a8204ed55
+
+
+
+
+
