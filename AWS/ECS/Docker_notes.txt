@@ -1,0 +1,166 @@
+
+1. Generating a New Rails Project
+
+Generate the project
+# OSX/Windows users will want to remove -- user "$(id - u):$(id - g)"
+docker run --rm --user "$(id -u):$(id -g)" \
+-v "$PWD":/usr/src/app -w /usr/src/app rails:4 \
+rails new --skip-bundle dockerzon
+
+https://hub.docker.com/_/rails/
+
+Generate the dummy project
+# OSX/Windows users will want to remove -- user "$(id - u):$(id - g)"
+docker run --rm --user "$(id -u):$(id -g)" \
+-v "$PWD":/usr/src/app -w /usr/src/app rails:4 \
+rails new --skip-bundle dummy
+
+
+Delete the dummy project
+rm -rf dummy
+
+
+# Get a list of docker images
+docker images
+
+# Delete the image
+docker rmi -f 3ee9ff448c6c
+
+2. Running the Application Locally
+
+Run the application using Docker Compose
+# Make sure you're in the dockerzon/ directory
+docker-compose up
+
+
+(In a new terminal) Investigate Docker's volumes
+docker volume ls
+
+(In a new terminal) Investigate Docker's network
+docker network ls
+
+Visit the application in your browser
+# Replace `localhost` with your Docker VM's IP address if you're running OSX or Windows.
+http://localhost:8000
+
+
+Initialize the database
+# OSX/Windows users will want to remove -- user "$(id - u):$(id - g)"
+docker exec --user "$(id -u):$(id -g)" dockerzon_dockerzon_1 rake db:reset
+docker exec --user "$(id -u):$(id -g)" dockerzon_dockerzon_1 rake db:migrate
+
+
+Visit the application in your browser
+# Replace `localhost` with your Docker VM's IP address if you're running OSX or Windows.
+http://localhost:8000
+
+
+
+3. Working with the Application
+
+Generate a dummy model
+# OSX/Windows users will want to remove -- user "$(id - u):$(id - g)"
+docker exec --user "$(id -u):$(id -g)" \
+dockerzon_dockerzon_1 rails g model Dummy foo
+
+
+Delete the dummy model
+# OSX/Windows users will want to remove -- user "$(id - u):$(id - g)"
+docker exec --user "$(id -u):$(id -g)" \
+dockerzon_dockerzon_1 rails d model Dummy
+
+
+Drop into a bash prompt inside of the running container
+docker exec -it dockerzon_dockerzon_1 bash
+# Get the contents of the mounted app directory, inside of the container
+ls -la
+# Exit the container
+CTRL+D
+
+
+Drop into a Rails console inside of the running container
+docker exec -it dockerzon_dockerzon_1 rails c
+# Exit the container
+CTRL+D
+
+
+4. Building the Demo Application
+
+Initialize the project
+# Download all of the Docker images and start the server
+docker-compose up
+docker exec --user "$(id -u):$(id -g)" dockerzon_dockerzon_1 rake db:reset
+docker-compose stop
+
+
+Start up everything with Docker Compose
+docker-compose up
+
+
+Migrate the database
+docker exec --user "$(id -u):$(id -g)" dockerzon_dockerzon_1 rake db:migrate
+
+Visit the application in your browser
+http://localhost:8000
+
+
+(New terminal) Log in to the rediscli
+docker exec -it dockerzon_redis_1 redis-
+
+# Get a list of all keys
+KEYS *
+
+# Get the value of the hit counter
+GET dockerzon::cache:total_hits
+
+# Exit the container
+CTRL+D
+
+
+Load up the Rails console
+docker exec -it dockerzon_dockerzon_1 rails c
+
+# List all of the records
+Javelin.all
+
+# Sum all of the thrown javelins
+Javelin.sum(:thrown)
+
+# Count all of the records
+Javelin.count
+
+# List all of the thrown javelins
+Javelin.all.pluck(:thrown)
+
+# Exit the container
+CTRL+D
+
+
+
+(Info) Steps performed to create the demo application
+
+# Generate a pages controller
+# OSX/Windows users will want to remove -- user "$(id - u):$(id - g)"
+
+docker exec --user "$(id -u):$(id -g)" \
+dockerzon_dockerzon_1 rails g controller Pages home health_check
+
+# Add the hit counter and hostname to app/controllers/pages.rb and app/views/pages/home.erb
+
+# Add the dockerzon image to app/assets/images/dockerzon.jpg and style up the home page in app/assets/stylesheets/application.scss
+# Set the default route in config/routes.rb
+
+# Generate a Javelin model
+docker exec --user "$(id -u):$(id -g)" \
+dockerzon_dockerzon_1 rails g model Javelin thrown:integer
+
+# Migrate the database
+docker exec --user "$(id -u):$(id -g)" \
+dockerzon_dockerzon_1 rake db:migrate
+
+# Generate a Throw Javelins job
+docker exec --user "$(id -u):$(id -g)" \
+dockerzon_dockerzon_1 rails g job throw_javelins
+
+# Edit jobs/throw_javelins_job.rb
+# Restart docker-compose to pickup the new job
