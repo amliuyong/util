@@ -185,6 +185,58 @@ docker logs -f 7b0d9901ad78
 docker logs --tail 20 310a8204ed55
 
 
+8. Domain Names and SSL
+
+a. Request an SSL certificate
+aws acm request-certificate --domain-name dockerzon.nickjanetakis.com
+
+aws acm describe-certificate --certificate-arn xxx
+
+aws acm list-certificates
+
+aws acm delete-certificate --certificate-arn xxx
+
+
+b. Updating the Security Group to Handle SSL, authorize HTTPS access for everyone
+aws ec2 authorize-security-group-ingress --group-id sg-5f63c627 \
+--protocol tcp --port 443 --cidr 0.0.0.0/0
+
+
+c. Add an HTTPS listener
+aws elb create-load-balancer-listeners --load-balancer-name dockerzon-web \
+--listeners \
+"Protocol=HTTPS,LoadBalancerPort=443,InstanceProtocol=HTTP,InstancePort=80 , SSLC ertificateId=xxx"
+
+d. Updating nginx to Handle SSL
+
+# Make sure you're in the nginx/ folder when executing this command
+docker build -t dockerzon_nginx .
+
+Tag the nginx image
+docker tag -f dockerzon_nginx:latest \
+xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/nginx:latest
+
+Authenticate your Docker client
+aws ecr get-login
+
+Push the nginx image to your repository
+docker push xxx.dkr.ecr.us-east-1.amazonaws.com/dockerzon/nginx
+
+
+Register a new web task definition
+# Make sure you're in the production/ folder when executing this command
+aws ecs register-task-definition \
+--cli-input-json file://web-task-definition.json
+
+Update the web service
+aws ecs update-service --cluster production --service web \
+--task-definition web --desired-count 2
+
+View the app over HTTPS in your browser
+https://the_dns_name_of_your_load_balancer
+
+
+
 
 
 
