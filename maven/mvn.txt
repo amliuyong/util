@@ -77,3 +77,34 @@ mvn package -DskipTests
        </dependency>
    </dependencies>
 </dependencyManagement>
+
+
+
+7. Run java
+
+maven-exec-plugin:
+
+mvn exec:java -Dexec.mainClass="com.example.Main" -Dexec.args="arg0 arg1"
+mvn exec:java -D"exec.mainClass"="com.example.Main"  # windows
+
+If you're doing this regularly, you can add the parameters into the pom.xml as well:
+
+<plugin>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>exec-maven-plugin</artifactId>
+  <version>1.2.1</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>java</goal>
+      </goals>
+    </execution>
+  </executions>
+  <configuration>
+    <mainClass>com.example.Main</mainClass>
+    <arguments>
+      <argument>foo</argument>
+      <argument>bar</argument>
+    </arguments>
+  </configuration>
+</plugin>
