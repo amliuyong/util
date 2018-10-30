@@ -1,6 +1,17 @@
 
 https://mvnrepository.com/
 
+sudo /usr/sbin/alternatives --config java
+
+
+sudo wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+
+sudo sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+
+sudo yum install -y apache-maven
+
+mvn exec:java -Dexec.mainClass="am.liuyong.Main"
+
 ----------------
 1. ignore test
 ----------------
@@ -40,8 +51,8 @@ mvn package -DskipTests
     <artifactId>struts2-core</artifactId>
     <version>${kotlin.version}</version>
     <exclusions>
-        <exclusion>  
-             <groupId>javassist</groupId> 
+        <exclusion>
+             <groupId>javassist</groupId>
              <artifactId>javassist</artifactId>
         <exclusion>
     </exclusions>
@@ -66,4 +77,3 @@ mvn package -DskipTests
        </dependency>
    </dependencies>
 </dependencyManagement>
-
