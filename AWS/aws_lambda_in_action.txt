@@ -1,0 +1,80 @@
+
+zip -9 -r ../createThumbnailAndStoreInDB.v1.0.zip *
+
+
+zip -9 -r ../faceDetection_nodejs_8.10.zip *
+
+
+zip -9 -r ../fn_purgeBucketByPrefix.zip *
+
+
+zip -9 -r ../fn_SimpleWebsite.zip *
+
+
+cd /Users/yongliu/Documents/github/github2/aws/AWS_Lambda_in_Action/Chapter05/FaceDetection/fn/faceDetection-js
+
+rm ../fn_faceDetection_v1.0.zip
+
+zip -9 -r ../fn_faceDetection_v1.1.zip *
+
+aws s3 rm s3://yongliu-s3-bucket/fn_faceDetection_v1.1.zip
+
+aws s3 cp ../fn_faceDetection_v1.1.zip s3://yongliu-s3-bucket/
+
+
+https://s3.amazonaws.com/yongliu-s3-bucket/fn_faceDetection_v1.0.zip
+
+
+
+# Here are reproducible steps to build a binary OpenCV Node module from 2.4.13.6 under Node 8.10.0:
+
+sudo yum update -y
+sudo yum install -y gcc gcc-c++ libgcc cmake
+sudo reboot
+
+
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.9/install.sh | bash
+bash
+nvm install 8.10.0
+
+cd
+
+curl -L -O https://github.com/opencv/opencv/archive/2.4.13.6.zip
+
+mkdir opencv-build
+
+unzip 2.4.13.6.zip -d opencv-build/
+
+cd opencv-build/
+
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D BUILD_SHARED_LIBS=NO -D CMAKE_INSTALL_PREFIX=~/opencv opencv-2.4.13.6/
+
+make && make install
+
+
+Edit the file ~/opencv/lib/pkgconfig/opencv.pc and in the Libs: line, insert the flag (anywhere in the line):
+
+-L${exec_prefix}/share/OpenCV/3rdparty/lib
+
+That is, the line should ultimately read like this:
+
+Libs: -L${exec_prefix}/share/OpenCV/3rdparty/lib -L${exec_prefix}/lib -lopencv_contrib -lopencv_stitching -lopencv_nonfree -lopencv_superres -lopencv_ocl -lopencv_ts -lopencv_videostab -lopencv_gpu -lopencv_photo -lopencv_objdetect -lopencv_legacy -lopencv_video -lopencv_ml -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lIlmImf -llibjasper -llibtiff -llibpng -llibjpeg -lopencv_imgproc -lopencv_flann -lopencv_core -lzlib -lrt -lpthread -lm -ldl -lstdc++
+
+cd
+mkdir ~/faceDetection
+echo "{}" > ~/faceDetection/package.json
+
+PKG_CONFIG_PATH=~/opencv/lib/pkgconfig/ npm install --prefix=~/faceDetection/ opencv
+
+Test the module:
+
+cd ~/faceDetection/node_modules/opencv/examples
+mkdir tmp
+node face-detection
+
+
+aws lambda invoke --function-name  yongliu-faceDetection  --payload  \
+'{"imageUrl":"https://inews.gtimg.com/newsapp_bt/0/6678561558/1000"}'  output.txt
+
+
+
