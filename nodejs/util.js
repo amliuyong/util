@@ -50,6 +50,31 @@ lambda.invoke({
 });
 
 
+var mediaFile = document.getElementById('mediaFile');
+var file = mediaFile.files[0];
+var isPublic = document.getElementById('is-public');
+var title = document.getElementById('title');
+var description = document.getElementById('description');
+
+var params = {
+    Bucket: S3_BUCKET,
+    Key: key,
+    ContentType: file.type,
+    Body: file,
+    Metadata: {
+        data: JSON.stringify({
+            isPublic: isPublic.checked,
+            title: title.value,
+            description: description.value
+        })
+    }
+};
+//uploadToS3(params);
+s3.putObject(params, function (err, data) {
+
+});
+
+
 //----------------------------//
 
 console.log('DynamoDB Record: %j', record.dynamodb);
@@ -57,11 +82,30 @@ console.log('Reading options from event:\n', util.inspect(event, {
     depth: 5
 }));
 
+
+const contentType = 'image/jpeg';
+const contentType = 'application/json';
+
+exports.handler = async event => {
+    const {
+        imageUrl
+    } = event;
+    const body = await new Promise((resolve, reject) => {
+        request.get(imageUrl, (error, _, body) => error ? reject(error) : resolve(body));
+    });
+
+    const image = await new Promise((resolve, reject) => {
+        cv.readImage(body, (error, image) => error ? reject(error) : resolve(image));
+    });
+
+    return image;
+}
+
 var latestUploadDay = Object.keys(uploadDays).sort().pop();
 
 var objKeys = Object.keys(image);
 
-if ('isPublic' in image  && 'uploadDay' in image) {
+if ('isPublic' in image && 'uploadDay' in image) {
     var uploadDay = image.uploadDay.S;
     uploadDays[uploadDay] = true;
     console.log('Public content found for ' + uploadDay);
