@@ -59,6 +59,14 @@ console.log('Reading options from event:\n', util.inspect(event, {
 
 var latestUploadDay = Object.keys(uploadDays).sort().pop();
 
+var objKeys = Object.keys(image);
+
+if ('isPublic' in image  && 'uploadDay' in image) {
+    var uploadDay = image.uploadDay.S;
+    uploadDays[uploadDay] = true;
+    console.log('Public content found for ' + uploadDay);
+}
+
 JSON.stringify(input)
 JSON.parse(data.Payload);
 
