@@ -1,0 +1,73 @@
+To install Docker on an Amazon Linux instance:
+
+
+1) Connect:
+	
+	ssh -i key.pem username@ip-address/hostname
+
+2) Update Installed Package: 
+ 	
+	sudo yum update -y
+
+
+3) Install Docker:
+
+	sudo yum install -y docker
+
+
+4) Start the Docker service:
+
+	sudo service docker start
+
+5) Add the ec2-user to the docker group :
+
+	sudo usermod -a -G docker ec2-user
+
+6) docker info
+
+
+======================== Already Done in Previous Session ===================================================
+
+
+7) Install git
+
+	sudo yum install -y git
+
+
+8) Clone the simple PHP application:
+
+	git clone https://github.com/awslabs/ecs-demo-php-simple-app
+
+9) Change directories:
+
+	cd ecs-demo-php-simple-app
+
+10) Examine the Dockerfile:
+
+	Cat Dockerfile
+
+11) Build your Docker image:
+
+	docker build -t tetranoodle .
+
+
+12) Show Docker images
+
+	docker images
+
+
+13) Run the newly built image:
+
+	docker run -p 80:80 tetranoodle
+
+
+14) After the build completes, tag your image:
+
+	docker tag tetranoodle:latest 133976391764.dkr.ecr.us-east-1.amazonaws.com/tetranoodle:latest 
+
+15) Run the following command to push this image 
+
+	docker push 133976391764.dkr.ecr.us-east-1.amazonaws.com/tetranoodle:latest
+
+
+ 
