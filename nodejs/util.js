@@ -152,3 +152,86 @@ if (!typeMatch) {
     callback('Unable to infer image type for key ' + srcKey);
 }
 var imageType = typeMatch[1]; //jpg png
+
+
+
+
+
+// Asynchronously runs a given function X times
+const asyncAll = (opts) => {
+    let i = -1;
+    const next = () => {
+        i++;
+        if (i === opts.times) {
+            opts.done();
+            return;
+        }
+        opts.fn(next, i);
+    };
+    next();
+};
+
+const load = (event, callback) => {
+    const payload = event.event;
+    asyncAll({
+        times: event.iterations,
+        fn: (next, i) => {
+            payload.iteration = i;
+            const lambdaParams = {
+                FunctionName: event.function,
+                InvocationType: 'Event',
+                Payload: JSON.stringify(payload)
+            };
+            lambda.invoke(lambdaParams, (err, data) => next());
+        },
+        done: () => callback(null, 'Load test complete')
+    });
+};
+
+
+
+
+// https, querystring, encodeURI
+
+var https = require('https');
+var querystring = require("querystring");
+
+
+var params = querystring.stringify({
+    value1: output
+});
+
+
+https.get(encodeURI(iftttMakerUrl) + '?' + params, function (res) {
+    console.log('Got response: ' + res.statusCode);
+    res.setEncoding('utf8');
+    res.on('data', function (d) {
+        console.log('Body: ' + d);
+    });
+    callback(null, res.statusCode);
+}).on('error', function (e) {
+    console.log("Got error: " + e.message);
+    callback(e.message);
+});
+
+
+var post_options = {
+    hostname: webhook_host,
+    port: 443,
+    path: webhook_path,
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(post_data)
+    }
+};
+
+var post_req = https.request(post_options, function (res) {
+    res.setEncoding('utf8');
+    res.on('data', function (chunk) {
+        console.log('Response: ' + chunk);
+    });
+});
+
+post_req.write(post_data);
+post_req.end();
