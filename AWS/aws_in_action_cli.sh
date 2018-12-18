@@ -425,17 +425,43 @@ aws lambda tag-resource --resource arn:aws:lambda:us-east-1:015887481462:functio
 --tags '{"tr:application-asset-insight-id": "501138", "tr:financial-identifier":"0661514060" }'
 
 
+aws lambda update-function-configuration --function-name yongliuTranscodeVideo \
+--timeout 180  --memory-size 1024
+
+aws lambda  update-function-configuration --function-name yongLiuGetUploadPolicy --region us-east-1 \
+    --timeout 10 \
+    --environment 'Variables={UPLOAD_URI=https://s3.amazonaws.com,UPLOAD_BUCKET=yongliu-s3-bucket,ACCESS_KEY=XXX,SECRET_ACCESS_KEY=XXXXXX}'
+
+
 aws lambda update-function-code --function-name sampleAuthChangePassword \
       --zip-file fileb://sampleAuthChangePassword.zip \
       --region us-east-1
+
+aws lambda update-function-code --function-name yongliuExtractVideoMetadata  \
+--s3-bucket yongliu-s3-bucket \
+--s3-key fn_code/yongliuExtractVideoMetadata.zip \
+--region us-east-1
 
 
 cd wwww
 
 aws s3 sync . s3://yongliu-s3-bucket --cache-control max-age="10" --acl public-read
 
+aws s3api put-object-acl  --bucket yongliu-s3-test \
+--key  upload_video/VPC-720p.mp4  \
+ --acl authenticated-read
 
 
+--acl (string)
+          The canned ACL to apply to the object.
+          Possible values:
+          o private
+          o public-read
+          o public-read-write
+          o authenticated-read
+          o aws-exec-read
+          o bucket-owner-read
+          o bucket-owner-full-control
 
 
 
