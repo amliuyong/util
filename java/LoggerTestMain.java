@@ -32,7 +32,7 @@ import java.lang.invoke.MethodHandles;
  *
  *     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
  *         <layout class="ch.qos.logback.classic.PatternLayout">
- *             <Pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+ *             <Pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
  *         </layout>
  *     </appender>
  *     <root level="debug">
