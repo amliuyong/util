@@ -12,6 +12,8 @@ sudo yum install -y apache-maven
 
 mvn exec:java -Dexec.mainClass="am.liuyong.Main"
 
+
+
 ----------------
 1. ignore test
 ----------------
@@ -59,7 +61,18 @@ mvn package -DskipTests
 </dependency>
 
 
-4. 依赖传递
+4. Scope
+
+Six Dependency scopes in single line:
+
+compile: default
+provided: by JDK or a container at runtime, e.g. jsp-api
+runtime: not required for compilation,  e.g. JDBC driver
+test: used only during tests, e.g Junit
+system: provided locally
+import: only available in Maven 2.0.9 or later
+
+
    scope compile  -> 传递
    scope test     -> 不传递
 
@@ -146,38 +159,41 @@ If you're doing this regularly, you can add the parameters into the pom.xml as w
 
 
 10. Generate all dependencies in a separate directory before the package phase and then include that in the classpath of the manifest
-   <plugin>
-     <groupId>org.apache.maven.plugins</groupId>
-     <artifactId>maven-dependency-plugin</artifactId>
-     <executions>
-         <execution>
-             <id>copy-dependencies</id>
-             <phase>prepare-package</phase>
-             <goals>
-                 <goal>copy-dependencies</goal>
-             </goals>
-             <configuration>
-                 <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                 <overWriteReleases>false</overWriteReleases>
-                 <overWriteSnapshots>false</overWriteSnapshots>
-                 <overWriteIfNewer>true</overWriteIfNewer>
-             </configuration>
-         </execution>
-     </executions>
- </plugin>
- <plugin>
-     <groupId>org.apache.maven.plugins</groupId>
-     <artifactId>maven-jar-plugin</artifactId>
-     <configuration>
-         <archive>
-             <manifest>
-                 <addClasspath>true</addClasspath>
-                 <classpathPrefix>lib/</classpathPrefix>
-                 <mainClass>theMainClass</mainClass>
-             </manifest>
-         </archive>
-     </configuration>
- </plugin>
+<!-- you must include the lib folder in the same directory with your jar where ever you transport the jar to. ->
+
+<plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+          <execution>
+              <id>copy-dependencies</id>
+              <phase>prepare-package</phase>
+              <goals>
+                  <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                  <outputDirectory>${project.build.directory}/classes/lib/</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>false</overWriteSnapshots>
+                  <overWriteIfNewer>true</overWriteIfNewer>
+              </configuration>
+          </execution>
+      </executions>
+  </plugin>
+
+    <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <configuration>
+              <archive>
+                  <manifest>
+                      <addClasspath>true</addClasspath>
+                      <classpathPrefix>lib/</classpathPrefix>
+                      <mainClass>com.refinitiv.ejv.mort2cdf.Main</mainClass>
+                  </manifest>
+              </archive>
+          </configuration>
+      </plugin>
 
 
 
