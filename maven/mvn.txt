@@ -145,7 +145,43 @@ If you're doing this regularly, you can add the parameters into the pom.xml as w
    </plugin>
 
 
-10. Meta info - for ServiceLoader
+10. Generate all dependencies in a separate directory before the package phase and then include that in the classpath of the manifest
+   <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-dependency-plugin</artifactId>
+     <executions>
+         <execution>
+             <id>copy-dependencies</id>
+             <phase>prepare-package</phase>
+             <goals>
+                 <goal>copy-dependencies</goal>
+             </goals>
+             <configuration>
+                 <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                 <overWriteReleases>false</overWriteReleases>
+                 <overWriteSnapshots>false</overWriteSnapshots>
+                 <overWriteIfNewer>true</overWriteIfNewer>
+             </configuration>
+         </execution>
+     </executions>
+ </plugin>
+ <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-jar-plugin</artifactId>
+     <configuration>
+         <archive>
+             <manifest>
+                 <addClasspath>true</addClasspath>
+                 <classpathPrefix>lib/</classpathPrefix>
+                 <mainClass>theMainClass</mainClass>
+             </manifest>
+         </archive>
+     </configuration>
+ </plugin>
+
+
+
+11. Meta info - for ServiceLoader
 
 <dependency>
      <groupId>org.kohsuke.metainf-services</groupId>
