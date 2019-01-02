@@ -149,6 +149,7 @@ List<Integer> numbers = stream.reduce(
                     return l1;
                 }
             );
+// see below // reduce pattern
 
 
 Comparator<Dish> dishCaloriesComparator = Comparator.comparingInt(Dish::getCalories);
@@ -396,14 +397,26 @@ public class PrimeNumbersCollector implements Collector<Integer, Map<Boolean, Li
 
 }
 
-
 public Map<Boolean, List<Integer>> partitionPrimesWithCustomCollector(int n) {
      return IntStream.rangeClosed(2, n).boxed().collect(new PrimeNumbersCollector());
 }
 
+// reduce pattern
+private int countWords(Stream<Character> stream) {
+    WordCounter wordCounter = stream.reduce(
+       new WordCounter(0, true),
+       WordCounter::accumulate,
+       WordCounter::combine);
+    return wordCounter.getCounter();
+}
 
-
-
-
-
-
+class WordCounter {
+    public WordCounter(int counter, boolean lastSpace) {
+    }
+    public WordCounter accumulate(Character c) {
+    }
+    public WordCounter combine(WordCounter wordCounter) {
+    }
+    public int getCounter() {
+    }
+}

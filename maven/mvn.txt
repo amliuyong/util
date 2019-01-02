@@ -76,6 +76,15 @@ import: only available in Maven 2.0.9 or later
    scope compile  -> 传递
    scope test     -> 不传递
 
+   <dependency>
+       <groupId>com.sybase.jdbc4</groupId>
+       <artifactId>jdbc4</artifactId>
+       <version>7.0.7</version>
+       <scope>system</scope>
+       <systemPath>${project.basedir}/lib/jconnect-7.0.7.jar</systemPath>
+   </dependency>
+
+
 5. 原则
    1. 路径最短原则
    2. 路径相同，先出现原则
@@ -225,3 +234,9 @@ If you're doing this regularly, you can add the parameters into the pom.xml as w
                      <skipTests>true</skipTests>
                  </configuration>
 </plugin>
+
+
+${project.basedir}
+${project.build.directory}
+${project.build.sourceDirectory}
+${maven.build.timestamp}
