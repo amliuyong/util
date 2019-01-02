@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-// java -jar ./target/benchmarks.jar ParallelStreamBenchmark
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
@@ -70,5 +69,16 @@ public class ParallelStreamBenchmark {
         System.gc();
     }
 
-
 }
+
+/*
+// java -jar ./target/benchmarks.jar ParallelStreamBenchmark
+
+Benchmark                                  Mode  Cnt   Score    Error  Units
+ParallelStreamBenchmark.forkJoinSum        avgt    4  22.508 ±  9.390  ms/op
+ParallelStreamBenchmark.iterativeSum       avgt    4   4.559 ±  0.284  ms/op
+ParallelStreamBenchmark.parallelRangedSum  avgt    4   5.397 ± 27.649  ms/op
+ParallelStreamBenchmark.parallelSum        avgt    4  96.241 ±  8.512  ms/op
+ParallelStreamBenchmark.rangedSum          avgt    4   5.858 ±  0.041  ms/op
+ParallelStreamBenchmark.sequentialSum      avgt    4  76.517 ±  8.625  ms/op
+ */
