@@ -6,7 +6,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Hello {
+public class
+ {
     // Initialize the Log4j logger.
     static final Logger logger = LogManager.getLogger(Hello.class);
 
