@@ -240,3 +240,17 @@ ${project.basedir}
 ${project.build.directory}
 ${project.build.sourceDirectory}
 ${maven.build.timestamp}
+
+
+11. mirrors in China
+<mirrors>
+     <mirror>
+         <id>alimaven</id>
+         <mirrorOf>central</mirrorOf>
+         <name>aliyun maven</name>
+         <url>https://maven.aliyun.com/repository/central/</url>
+     </mirror>
+ </mirrors>
+
+
+ 
