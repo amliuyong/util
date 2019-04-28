@@ -1,0 +1,367 @@
+view server info:
+
+cat /ect/*-release
+
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+sudo yum upgrade -y
+
+sudo yum install -y ftp://bo.mirror.garr.it/1/slc/centos/7.1.1503/extras/x86_64/Packages/container-selinux-2.9-4.el7.noarch.rpm
+
+sudo yum install -y docker-ce
+
+sudo systemctl start docker.service
+
+which group docker
+
+whoami
+
+sudo usermod -aG doccker $USER
+
+# logout/login
+
+docker image ls
+
+docker --version
+
+sudo systemctl stop docker.service
+
+docker login
+
+
+========================
+FROM ubuntu:latest
+
+RUN apt-get update -y && apt-get install -y python-dev python-pip
+
+COPY ./requirements.txt /python-app/requirements.txt
+WORKDIR /python-app
+RUN pip install -r requirements.txt
+
+COPY ./first-python-webpage.py /python-app/first-python-webpage.py
+
+EXPOSE 8080
+
+ENTRYPOINT ["python2", "first-python-webpage.py"]
+
+
+=========================
+
+docker build -t aws-ecs
+docker image ls
+
+docker run --name aws-ecs -d -p 80:8080 aws-ecs:latest
+
+docker container ls
+
+
+docker image build -t first-python:v1 ./
+
+docker container ps
+
+docker image inspect <imageId>
+
+docker image rm <imageId>
+
+docker image history <imageId>
+
+#
+# push image to docker hub
+#
+create repo in docker hub: amliyong/aws-ecs
+docker login
+docker tag <imageId> amliyong/aws-ecs:latest
+docker image ls
+docker image push amliyong/aws-ecs:latest
+
+
+docker container stop <containerId>
+docker image rm -f  <imageId>
+
+
+docker image pull amliyong/aws-ecs:latest
+
+docker run -d -e NAME="envValue" --name aws-ecs-from-hub \
+-p 8080:8080 amliyong/aws-ecs:latest
+
+docker container ps
+
+-------------
+- container
+-------------
+docker container ls
+
+docker container ps -a
+
+docker container stop <containerId>
+
+docker container start <containerId>
+
+docker container logs <containerId>
+
+docker container inspect <containerId>
+
+docker container rename aws-ecs-from-hub aws-ecs
+
+docker container stop aws-ecs
+
+docker container rm <containerId>
+
+--
+- enter an existing container
+--
+
+docker exec -it aws-ecs /bin/bash
+
+
+
+------
+- docker network
+------
+
+docker network ls
+
+docker network create --attachable  -d bridge --internal
+
+docker network create --attachable  -d bridge --subnet=10.20.0.0/16 aws-ecs
+
+# run container in network 'aws-ecs'
+docker container run -d -e NAME="envValue" --name web \
+--net aws-ecs -p 80:8080 first-python:v1
+
+docker container run -d -e NAME="envValue" --name app \
+--net aws-ecs -p 8080:8080 first-python:v1
+
+docker network inspect aws-ecs
+
+docker container run --detach -e NAME="docker run command" \
+--name app -p 80:8080 --net aws-ecs first-python:v1
+
+------
+- docker volumes
+------
+
+From centos:latest
+
+RUN yum install -y httpd
+
+VOLUME /var/www/html
+
+COPY ./index.html /var/www/html
+
+EXPOSE 80
+
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+
+----------------
+
+docker container run -d --name apachev2 -p 80:80 apache:v2
+docker container inspect <containerId>
+# Mounts
+# default volume location /var/lib/dockers/volumes/
+
+docker volume ls
+docker volume create -d local aws-ecs-volume
+
+mkdir container-volume
+cd container-volume
+
+# edit index.html
+
+docker container run -d  --name web -p 80:80 \
+-v /home/ec2-user/container-volume:/var/www/html \
+apache:v2
+
+
+==============================
+- Mysql
+-----------
+
+docker pull mysql:latest
+mkdir mysql-db-store
+
+docker run -d  \
+-e MYSQL_ROOT_PASSWORD=abc123 \
+--name empdb --net awsecs -p 3306:3306 \
+-v /home/ec2-user/mysql-db-store/:/var/lib/mysql \
+mysql:latest
+
+docker container inspect
+
+docker container exec -it empdb /bin/bash
+
+mysql -u root -p
+show databases;
+create database awsecs;
+describe <table>
+
+
+=====================
+FROM ubuntu:18.04
+
+RUN apt-get update -y && apt-get install -y python-pip python-dev
+
+COPY ./requirements.txt /app/addemp/requirements.txt
+WORKDIR /app/addemp
+RUN pip install -r requirements.txt
+
+COPY ./AddEmp.py /app/addemp/AddEmp.py
+COPY ./templates/AddEmp.html /app/addemp/templates/AddEmp.html
+COPY ./templates/AddEmpOutput.html /app/addemp/templates/AddEmpOutput.html
+
+EXPOSE 80
+
+ENTRYPOINT ["python2", "AddEmp.py"]
+
+
+=====================
+FROM ubuntu:18.04
+
+RUN apt-get update -y && apt-get install -y python-pip python-dev
+
+COPY ./requirements.txt /app/getemp/requirements.txt
+WORKDIR /app/getemp
+RUN pip install -r requirements.txt
+
+COPY ./GetEmp.py /app/getemp/GetEmp.py
+COPY ./templates/GetEmp.html /app/getemp/templates/GetEmp.html
+COPY ./templates/GetEmpOutput.html /app/getemp/templates/GetEmpOutput.html
+
+EXPOSE 8080
+
+ENTRYPOINT ["python2", "GetEmp.py"]
+
+-------------------
+
+docker run -d -e DHOST="empdb" -e DBPORT="3306" \
+-e DBUSER="root" -e DBPWD="abc123" -e DATABASE="awsecs" \
+--name addemp --net awsecs -p 80:80 \
+addemp:lastest
+
+
+docker run -d -e DHOST="empdb" -e DBPORT="3306" \
+-e DBUSER="root" -e DBPWD="abc123" -e DATABASE="awsecs" \
+--name getemp --net awsecs -p 8080:8080 \
+getemp:latest
+
+
+=================
+- ECR
+
+$(aws ecr get-login --regin us-east-1 --no-include-email)
+
+create a repo: addemp
+create a repo: getemp
+create a repo: aws-ecs
+
+# build images ...
+
+docker tag addemp:latest 2344553332.dkr.ecr.us-east-1.amazonaws.com/addemp:latest
+
+docker push 2344553332.dkr.ecr.us-east-1.amazonaws.com/addemp:latest
+
+aws ecr describe-repositories
+aws ecr describe-images --repository-name <name>
+
+
+docker pull 2344553332.dkr.ecr.us-east-1.amazonaws.com/addemp:latest
+
+
+=================
+- ECS
+
+ECS Agent  ---call ---> ECS service
+AmazonEC2ContainerServiceforEC2Role
+
+Step 1. create docker image
+Step 2. create ECR repo upload image
+Step 3. create VPC and NAT GateWay
+ - VPC(10.20.0.0/16)
+ - Five subnets - 3 public (aza, azb, azc) 2 private(azb, azc)
+ - NetGate with Elastic IP, attach to VPC - public subnet - azc
+ - two router tables:
+    - aws-ecs-private-route-table  - 2 routes
+       Destination         Taget
+       10.20.0.0/16        local
+       0.0.0.0/0           nat-xxxxxx
+       associations - two private subnets
+    - aws-ecs-public-route-table
+       Destination         Taget
+       10.20.0.0 /16        local
+       0.0.0.0/0            igw-xxxxxx
+       associations - three public subnets
+  - Create two security groups
+     - aws-ecs-load-balancer-security-group
+           - allow all inbound/outbound
+     - aws-ecs-private-subnet-security-group
+           - allow all inbound from VPC(10.20.0.0/16)
+
+Step4: create application load balancer
+  1. create target group for port 80
+     target type: IP
+  2. create target group for port 8080
+        target type: IP
+  3. create load balancer
+     - add to listeners
+       http 80
+       http 8080
+     - add 3 public subnets
+     - add aws-ecs-load-balancer-security-group
+     - routing - only config one target group at this time
+     - create ...
+     - edit Listeners - views and edit rules
+      add all paths to the rule
+     - change url to LB's url in your html - update images
+
+Step5: create RDS database
+Step6: create ECS cluster
+       - in two private subnets
+
+Step7: create Task definition
+  - create two task definitions, each task has one container
+  - network mode: awsvpc
+  - log configuration - json-file
+
+Step8: create Service
+  - create two services
+  - chose 2 private subnets
+  - load balancer for each service
+
+Step9: TEST
+  use the url of the load balancer to access the application
+
+
+
+ Hints & Tips:
+ 1. IAM - roles at Task(container) level
+ 2. Classic Load Balancer cannot be used with "awsvpc" networking mode
+ 3. if you want to see logs using "docker container logs <cid>", the log driver should be mentioned as "json-file" in task/container definition.
+ 4. NAT Gateway requirement if EC2 are in private subnet.
+ 5. Best practice is to use Application Load Balance with Auto scaling.
+ 6. Minimum instance and task should always be 1 as part of auto scaling.
+ 7. SSH key pair if you need to login to the EC2 and use native docker commands.
+ 8. "Task role" and "Task Execution Role" are different.
+ 9. Remember the docker run command OPTIONS mapping with "Container Definition" in "Task Definition".
+ 10. use of Volume(Docker Volume, Bind Mount) diligently.
+ 11. if database usage is necessary, ALAWYS use RDS.
+ 12. Service type can be REPLICA & DAEMON - use the proper one.
+ 13. one service is mapped with one Task definition only.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1
