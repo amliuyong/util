@@ -1,5 +1,7 @@
 view server info:
 
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html
+
 
 sudo yum update -y
 sudo yum install docker -y
@@ -356,20 +358,3 @@ Step9: TEST
  13. one service is mapped with one Task definition only.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1
