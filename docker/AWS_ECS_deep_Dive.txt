@@ -1,6 +1,14 @@
 view server info:
 
-cat /ect/*-release
+
+sudo yum update -y
+sudo yum install docker -y
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+
+----------------------------
+
+cat /etc/*-release
 
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
@@ -16,7 +24,7 @@ which group docker
 
 whoami
 
-sudo usermod -aG doccker $USER
+sudo usermod -aG docker $USER
 
 # logout/login
 
