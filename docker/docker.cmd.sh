@@ -31,7 +31,8 @@ docker rmi <image_id>
 
 # remove all images
 docker rmi `docker images -q`
-
+# remove dangling images
+docker rmi $(docker images -q -f dangling=true)
 
 ### container ###
 
@@ -99,6 +100,9 @@ docker rm mycentos001
 
 docker rm `docker ps -a -q`
 
+### rm dangling volume ###
+
+docker volume rm $(docker volume ls -f dangling=true -q)
 
 
 ### MySQL ###
