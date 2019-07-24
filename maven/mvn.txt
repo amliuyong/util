@@ -19,6 +19,7 @@ mvn exec:java -Dexec.mainClass="am.liuyong.Main"
 ----------------
 
 mvn package -Dmaven.test.skip=true
+mvn test -Dmaven.test.skip=false -Dtest=com.xxx.Class#method1
 
 pom.xml
 <properties>
