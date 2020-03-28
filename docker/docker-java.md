@@ -114,9 +114,9 @@
 
 
 ## Running Spring Boot in a Docker Container Example
+Dockerfile
 
 ```docker
-Dockerfile
 FROM centos
 
 ENV JAVA_VERSION 8u31
