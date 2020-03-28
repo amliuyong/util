@@ -139,7 +139,7 @@ EXPOSE 8080
 VOLUME /tmp
 ADD /maven/sfg-thymeleaf-course-0.0.1-SNAPSHOT.jar sfg-thymeleaf-course.jar
 RUN sh -c 'touch /sfg-thymeleaf-course.jar'
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/sfg-thymelea
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/myapp.jar"]
 
 ```
 
