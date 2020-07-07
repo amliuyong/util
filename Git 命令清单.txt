@@ -195,6 +195,7 @@ $ git tag
 
 # 新建一个tag在当前commit
 $ git tag [tag]
+$ git tag -a "v1.0.0" -m "new version"
 
 # 新建一个tag在指定commit
 $ git tag [tag] [commit]
@@ -213,6 +214,8 @@ $ git push [remote] [tag]
 
 # 推送某个tag：
 $ git push origin v1.0.0
+
+$ git push --follow-tags
 
 
 # 提交所有tag
