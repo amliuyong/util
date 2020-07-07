@@ -229,5 +229,5 @@ source = "git::<git_repo_name>.git//<folder_name>?ref=<version>"
 source = "git::https://github.com/cloudiac18/ultimate-terraform-course-for-devops.git//Section-05-modules/modules/webservers-elb-asg?ref=v0.0.11"
 ```
 
-**when you update moudle, must run `terraform get`** 
+*when you update module, must run `terraform get`*
 
