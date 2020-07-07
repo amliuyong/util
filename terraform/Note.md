@@ -11,9 +11,12 @@ Four places terraform looks for credentials to authenticate against AWS
 1.Static credentials declared in provider section of code
 
 2.Export as environment variables
+
+```
   export AWS_ACCESS_KEY="access_key"
   export AWS_SECTRET_KEY="secret_access_key"
   export AWS_DEFAULT_REGION="us-east-1"
+```
 
 3.Shared credentials (~/.aws/credentials)
 
@@ -176,7 +179,7 @@ data "terraform_remote_state" "global_sg" {
 
 ## Data Source
 
-Provider Data Sources[https://www.terraform.io/docs/providers/aws/d/region.html]
+[Provider Data Sources](https://www.terraform.io/docs/providers/aws/d/region.html)
 
 ```
 aws_arn
@@ -220,11 +223,11 @@ user_data=file("${path.module}/user_data.sh")
 ```
 
 ### Moudle Versioning
-
+```
 source = "git::<git_repo_name>.git//<folder_name>?ref=<version>"
 
 source = "git::https://github.com/cloudiac18/ultimate-terraform-course-for-devops.git//Section-05-modules/modules/webservers-elb-asg?ref=v0.0.11"
+```
 
-
-when you update moudle, must run terraform get 
+*when you update moudle, must run terraform get* 
 
