@@ -300,7 +300,7 @@ resource "aws_volume_attachment" "web-ebs-attach" {
 ### vpc
 ![AWS Nat Gateway in VPC](./aws_vpc_nat.png)
 
-[Code](./terraform_advance/05_working_vpc-subnet-igw-natgw)
+[Code](./terraform_andvance/05_working_vpc-subnet-igw-natgw/)
 
 
 ## Provisioner
