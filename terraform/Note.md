@@ -81,6 +81,8 @@ terraform graph
   ${count.index + 1}
   ${self.private_id}
   ${var.Map[Key]} ==> ${var.ami[us-east-1]}
+                  ==> "${lookup(var.instance_type, terraform.workspace)}"
+
   ${var.List} ==> ${var.subnets}
   ${aws_instance.myec2.id}
   
@@ -103,6 +105,7 @@ terraform graph
 
    Format(format, args) ==> format("%.1s", "${var.instacne_type}")  # get first letter
 
+   
 
 ```
 
@@ -297,7 +300,7 @@ resource "aws_volume_attachment" "web-ebs-attach" {
 ### vpc
 ![AWS Nat Gateway in VPC](./aws_vpc_nat.png)
 
-05_working_vpc-subnet-igw-natgw
+[Code](./terraform_advance/05_working_vpc-subnet-igw-natgw)
 
 
 ## Provisioner
@@ -312,3 +315,64 @@ resource "aws_volume_attachment" "web-ebs-attach" {
    }
   ``` 
 
+ - remote-exec, run command instead of user_data
+```
+   provisioner "remote-exec" { 
+       inline = [
+           "sudo /usr/bin/apt-get update",
+           "sudo DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get upgrade -yq",
+           "sudo /usr/bin/apt-get install apache2 -y",
+           "sudo /usr/sbin/ufw allow in 'Apache Full' ",
+           "sudo /bin/chmod 757  /var/www/html/index.html",
+           "sudo /bin/echo 'Hello world' >/var/www/html/index.html",
+           "instance_ip=`curl http://169.254.169.254/latest/meta-data/local-ipv4`",
+           "sudo echo $instance_ip >>/var/www/html/index.html", 
+        ]
+        connection {
+           type = "ssh"
+           user = "ubuntu"
+           private_key=file("./terraform.pem")
+           host = self.public_ip
+       }
+   }
+
+```
+
+
+## Workspace
+
+workspace commands:
+
+```
+terraform workspace show
+terraform workspace list
+
+terraform workspace new prod
+terraform workspace select prod
+
+```
+
+use workspace in code: `${terraform.workspace}`
+
+```
+resource "aws_instance" "hellow-world" {
+     ami = "${var.ami}" 
+     instance_type = "${lookup(var.instance_type, terraform.workspace)}"
+     vpc_security_group_ids = ["${aws_security_group.webserver_sg.id}"]
+     key_name = "terraform"
+     tags = {
+     	 Name = "Hello world-${terraform.workspace}"
+     }
+```     
+
+## using tfvars as parameters
+
+```
+terraform init -var-file="silicon_valley.tfvars" -backend-config="key=silicon_valley/terraform.tfstate"  -reconfigure
+
+terraform plan -var-file="silicon_valley.tfvars"
+
+terraform apply -var-file="silicon_valley.tfvars"
+
+
+```
