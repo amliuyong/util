@@ -231,3 +231,84 @@ source = "git::https://github.com/cloudiac18/ultimate-terraform-course-for-devop
 
 *when you update module, must run `terraform get`*
 
+
+
+## Terraform State
+
+```
+terraform {
+    backend s3 {
+       encrypt=true
+       bucket = "terraformiac-mystach-tfstate"
+       key = "global_security_group/terraform.tfstate"
+       region = "us-east-1"
+       dynamodb_table = "terraform-state"
+    }
+}
+
+```
+
+### State Locking
+
+dynamodb_table *terraform-state*  is for locking. 
+primary key (string): *LockID* 
+
+## AWS Service
+
+#### route53
+
+create a route53 record to point to EC2 private id
+
+```
+resource "aws_route53_zone" "my_private_zone" {
+   name = "myr53zone.com"
+}
+
+resource "aws_route53_record" "webserver" {
+    zone_id = "${aws_route53_zone.my_private_zone.zone_id}"
+    name    = "web.myr53zone.com"
+    type    = "A"
+    ttl     = "300"
+    records = ["${aws_instance.hellow-world.private_ip}"]
+}
+
+```
+
+#### ebs
+
+```
+resource "aws_ebs_volume" "web-ebs" {
+    availability_zone = "${var.az}"
+    size = 10
+    type = "gp2"
+    tags = {
+        Name = "webserver_data"
+     } 
+}
+  
+resource "aws_volume_attachment" "web-ebs-attach" {
+    device_name = "/dev/sdd"
+    volume_id = "${aws_ebs_volume.web-ebs.id}"
+    instance_id="${aws_instance.hellow-world.id}"
+}
+```
+
+
+### vpc
+![AWS Nat Gateway in VPC](./aws_vpc_nat.png)
+
+05_working_vpc-subnet-igw-natgw
+
+
+## Provisioner
+
+ - local-exec: run locally where `terraform apply` run
+  
+  ```
+   provisioner "local-exec" {
+      command = "echo ${self.private_ip} > webserver_private_ip.txt"
+      # command = "echo ${self.public_ip} > webserver_public_ip.txt"
+      on_failure = continue
+   }
+  ``` 
+
