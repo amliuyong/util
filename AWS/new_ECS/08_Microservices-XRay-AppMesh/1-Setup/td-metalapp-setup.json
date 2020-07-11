@@ -1,0 +1,24 @@
+{
+    "taskRoleArn": "arn:aws:iam::<<your-account-id>>:role/ecsTaskRole",
+    "executionRoleArn": "arn:aws:iam::<<your-account-id>>:role/ecsTaskExecutionRole",
+    "containerDefinitions": [{
+        "name": "metalapp",
+        "image": "gkoenig/metalapp:latest",
+
+        "essential": true,
+        "portMappings": [{
+            "protocol": "tcp",
+            "containerPort": 9001
+        }],
+        "memory": 128,
+        "environment": [{
+            "name": "PORT",
+            "value": "9001"
+        }]
+    }],
+    "family": "td-metalapp",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "networkMode": "awsvpc"
+}
