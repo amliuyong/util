@@ -1,7 +1,7 @@
 
 ## EBS Vs. EFS
 
-![ebs](./ebs.jpg)
+![ebs](ebs.jpg)
 ![efs](./efs.jpg)
 ![storage](./default_storage.jpg)
 ![storage_options](./storage_options.jpg)
