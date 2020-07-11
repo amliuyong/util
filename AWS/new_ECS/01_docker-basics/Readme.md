@@ -156,5 +156,5 @@ sudo docker run <your-dockerhub-name>/<your-docker-repo-name> .
 sudo docker push <your-dockerhub-name>/<your-docker-repo-name> 
 ```
 
-![Docker Builder](docker_builder.jpg)
+![Docker Builder](docker_builder.jpg?raw=true)
 
