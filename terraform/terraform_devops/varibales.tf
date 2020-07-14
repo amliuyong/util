@@ -25,16 +25,30 @@ variable "bastion_key_name" {
 
 variable "ecr_image_api" {
   description = "ECR Image for API"
-  default     = "#APP ECR Image URL#:latest"
+  default     = "#APP_ECR_Image_URL#:latest"
 }
 
 variable "ecr_image_proxy" {
   description = "ECR Image for API"
-  default     = "#App ECR Image for Proxy#:latest"
+  default     = "#App_ECR_Image_for_Proxy#:latest"
 }
 
 variable "django_secret_key" {
   description = "Secret key for Django app"
 }
 
+variable "dns_zone_name" {
+  description = "Domain name"
+  default     = "#_Domain_Name_#"
+}
+
+variable "subdomain" {
+  description = "Subdomain per environment"
+  type        = map(string)
+  default = {
+    production = "api"
+    staging    = "api.staging"
+    dev        = "api.dev"
+  }
+}
 
