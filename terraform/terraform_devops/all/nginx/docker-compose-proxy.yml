@@ -12,7 +12,6 @@ services:
       - DB_NAME=app
       - DB_USER=postgres
       - DB_PASS=supersecretpassword
-      - S3_STORAGE_BACKEND=0
       - ALLOWED_HOSTS=127.0.0.1
     depends_on:
       - db
