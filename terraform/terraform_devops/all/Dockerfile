@@ -17,6 +17,7 @@ RUN mkdir /app
 WORKDIR /app
 COPY ./app /app
 COPY ./scripts/ /scripts/
+
 RUN chmod +x /scripts/*
 
 RUN mkdir -p /vol/web/media
