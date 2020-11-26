@@ -426,5 +426,10 @@ git rm -r --cached .
 git add .
 git commit -m 'update .gitignore'
 
+## add remote
+```
+git remote add sfgRepo https://github.com/springframeworkguru/spring5webapp.git
+git fetch sfgRepo
 
+```
 
